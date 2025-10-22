@@ -910,23 +910,6 @@ pub fn hasPrefixComptimeType(comptime T: type, self: []const T, comptime alt: an
     return self.len >= alt.len and eqlComptimeCheckLenWithType(T, self[0..rhs.len], rhs, false);
 }
 
-pub fn hasSuffixComptimeType(comptime T: type, self: []const T, comptime alt: anytype) bool {
-    const rhs = comptime switch (T) {
-        u8 => alt,
-        u16 => switch (bun.meta.Item(@TypeOf(alt))) {
-            u16 => alt,
-            else => w(alt),
-        },
-        else => @compileError("Unsupported type given to hasSuffixComptimeType"),
-    };
-    return self.len >= alt.len and eqlComptimeCheckLenWithType(
-        T,
-        self[self.len - rhs.len ..],
-        rhs,
-        false,
-    );
-}
-
 pub fn hasSuffixComptime(self: string, comptime alt: anytype) bool {
     return self.len >= alt.len and eqlComptimeCheckLenWithType(u8, self[self.len - alt.len ..], alt, false);
 }
@@ -1616,8 +1599,8 @@ pub fn trimPrefixComptime(comptime T: type, buffer: []const T, comptime prefix: 
 }
 
 /// suffix is of type []const u8 or []const u16
-pub fn trimSuffixComptime(comptime T: type, buffer: []const T, comptime suffix: anytype) []const T {
-    return if (hasSuffixComptimeType(T, buffer, suffix))
+pub fn trimSuffixComptime(buffer: []const u8, comptime suffix: anytype) []const u8 {
+    return if (hasSuffixComptime(buffer, suffix))
         buffer[0 .. buffer.len - suffix.len]
     else
         buffer;
@@ -1840,11 +1823,11 @@ pub fn isAllWhitespace(slice: []const u8) bool {
 }
 
 // TODO(markovejnovic): Could be SIMD
-pub fn isAllLowercaseASCII(slice: []const u8) bool {
+pub fn containsUppercaseAscii(slice: []const u8) bool {
     for (slice) |c| {
-        if (c >= 'A' and c <= 'Z') return false;
+        if (c >= 'A' and c <= 'Z') return true;
     }
-    return true;
+    return false;
 }
 
 pub const whitespace_chars = [_]u8{ ' ', '\t', '\n', '\r', std.ascii.control_code.vt, std.ascii.control_code.ff };

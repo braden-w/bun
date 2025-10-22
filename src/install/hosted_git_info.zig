@@ -345,7 +345,7 @@ pub const HostedGitInfo = struct {
         };
 
         // Strip .git suffix (from-url.js line 88-90)
-        const project_trimmed = bun.strings.trimSuffixComptime(u8, project_part, ".git");
+        const project_trimmed = bun.strings.trimSuffixComptime(project_part, ".git");
 
         // Get committish from URL fragment (from-url.js line 92-94)
         const fragment = try parsed.url.fragmentIdentifier().toOwnedSlice(allocator);
@@ -439,7 +439,7 @@ pub const WellDefinedProtocol = enum {
         return if (protocol_with_colon.len == 0)
             return null
         else
-            strings.get(bun.strings.trimSuffixComptime(u8, protocol_with_colon, ":"));
+            strings.get(bun.strings.trimSuffixComptime(protocol_with_colon, ":"));
     }
 
     /// Maximum length of any protocol string in the strings map (computed at compile time).
@@ -1144,7 +1144,7 @@ const HostProvider = enum {
                     const type_part = iter.next();
                     const committish_part = iter.next();
 
-                    const project = bun.strings.trimSuffixComptime(u8, project_part, ".git");
+                    const project = bun.strings.trimSuffixComptime(project_part, ".git");
 
                     if (user_part.len == 0 or project.len == 0) {
                         return null;
@@ -1214,7 +1214,7 @@ const HostProvider = enum {
                         }
                     }
 
-                    const project = bun.strings.trimSuffixComptime(u8, project_part, ".git");
+                    const project = bun.strings.trimSuffixComptime(project_part, ".git");
 
                     if (user_part.len == 0 or project.len == 0) {
                         return null;
@@ -1266,7 +1266,7 @@ const HostProvider = enum {
                     const project_part = pathname[end_slash + 1 ..];
                     const user_part = pathname[0..end_slash];
 
-                    const project = bun.strings.trimSuffixComptime(u8, project_part, ".git");
+                    const project = bun.strings.trimSuffixComptime(project_part, ".git");
 
                     if (user_part.len == 0 or project.len == 0) {
                         return null;
@@ -1323,7 +1323,7 @@ const HostProvider = enum {
                         user_part = "";
                     }
 
-                    const project = bun.strings.trimSuffixComptime(u8, project_part.?, ".git");
+                    const project = bun.strings.trimSuffixComptime(project_part.?, ".git");
                     const user = if (user_part.len > 0) user_part else null;
 
                     if (project.len == 0) {
@@ -1382,7 +1382,7 @@ const HostProvider = enum {
                         }
                     }
 
-                    const project = bun.strings.trimSuffixComptime(u8, project_part, ".git");
+                    const project = bun.strings.trimSuffixComptime(project_part, ".git");
 
                     if (user_part.len == 0 or project.len == 0) {
                         return null;

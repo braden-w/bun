@@ -110,7 +110,7 @@ pub fn validate(name: []const u8) ValidationResult {
         result.warnings.insert(Warning.name_too_long);
     }
 
-    if (!bun.strings.isAllLowercaseASCII(name)) {
+    if (bun.strings.containsUppercaseAscii(name)) {
         result.warnings.insert(Warning.name_contains_uppercase_letters);
     }
 
