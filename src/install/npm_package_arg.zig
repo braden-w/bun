@@ -393,10 +393,11 @@ pub const NpaSpec = struct {
                 const fetch_spec_temp = if (protocol_type == .git_plus_file) blk: {
                     const after_protocol = raw_spec_mut["git+file://".len..];
 
-                    if (pathlib.startsWithWindowsLetter(
-                        after_protocol,
-                        .{ .run_on = .only_on_windows },
-                    )) {
+                    const starts_w32_drive_letter = if (comptime bun.Environment.isWindows)
+                        bun.strings.startsWithWindowsDriveLetter(after_protocol)
+                    else false;
+
+                    if (starts_w32_drive_letter) {
                         const parts = try SpecStrUtils.extractHostAndPathnameWithLowercaseHost(
                             allocator,
                             parsed_url,
@@ -734,8 +735,7 @@ pub const NpaSpec = struct {
             const mutable_copy = try temp.dupe(u8, save_spec_temp);
             save_spec_extra = mutable_copy;
             save_spec_temp = mutable_copy;
-
-            pathlib.normalizeSeparatorsMut(mutable_copy, .{ .run_on = .only_on_windows });
+            std.mem.replaceScalar(u8, mutable_copy, '\\', '/');
 
             // Fix double slashes: file://C:/foo -> file:/C:/foo
             if (bun.strings.hasPrefixComptime(mutable_copy, "file://")) {
@@ -1175,12 +1175,14 @@ const PathToFileUrlUtils = struct {
     }
 };
 
-/// Equivalent to pathlib.normalizeSeparatorsMut, but allocates a new buffer.
+/// Normalizes a Windows path by replacing backslashes with forward slashes.
+///
+/// Allocates a new string for the normalized path.
 fn normalizeWindowsPath(allocator: std.mem.Allocator, path: []const u8) ![]u8 {
     if (!bun.Environment.isWindows) return error.NotWindows;
     const normalized = try allocator.dupe(u8, path);
     errdefer allocator.free(normalized);
-    pathlib.normalizeSeparatorsMut(normalized, .{ .run_on = .only_on_windows });
+    std.mem.replaceScalar(u8, normalized, '\\', '/');
     return normalized;
 }
 
@@ -1201,7 +1203,7 @@ pub const SpecStrUtils = struct {
         if (slash_count == 0) return path;
 
         const c = path[slash_count..];
-        return if (pathlib.startsWithWindowsLetter(c, .{})) c else path;
+        return if (bun.strings.startsWithWindowsDriveLetter(c)) c else path;
     }
 
     /// Strips "git+" prefix from an owned string if present, returning a SlicedBuffer.

@@ -970,26 +970,6 @@ pub const ExecutionOption = enum {
     always,
 };
 
-/// Given a path, normalize it to use POSIX-style separators. Mutates the given string.
-///
-/// You may pass the `.only_on_windows` option to skip normalization on non-Windows platforms,
-/// saving a couple of cycles.
-pub fn normalizeSeparatorsMut(
-    input_path: []u8,
-    comptime opts: struct {
-        run_on: ExecutionOption = .always,
-    },
-) void {
-    if (opts.run_on == .only_on_windows and !bun.Environment.isWindows) {
-        return;
-    }
-
-    // TODO(markovejnovic): Could be SIMD
-    for (input_path) |*c| {
-        if (c.* == '\\') c.* = '/';
-    }
-}
-
 /// Heuristic which checks whether the given path looks like it starts with a windows drive letter.
 ///
 /// If you pass the `.only_on_windows` option, this function will always return false on
